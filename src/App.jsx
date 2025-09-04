@@ -1,33 +1,29 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Button, Card, Avatar, AbsoluteCenter } from '@chakra-ui/react'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <AbsoluteCenter>
+        <Card.Root width="320px" >
+          <Card.Body gap="2">
+            <Avatar.Root size="lg" shape="rounded">
+              <Avatar.Image src="https://picsum.photos/200/300" />
+              <Avatar.Fallback name="Nue Camp" />
+              </Avatar.Root>
+              <Card.Title mb="2">chakra sample</Card.Title>
+              <Card.Description>
+                Count is {count}
+              </Card.Description>
+            </Card.Body>
+            <Card.Footer justifyContent="flex-end">
+              <Button colorPalette="red" variant="outline" onClick={() => setCount(0)}>reset</Button>
+              <Button colorPalette="blue" variant="outline" onClick={() => setCount((count) => count + 1)}>Click me</Button>
+            </Card.Footer>
+          </Card.Root>
+      </AbsoluteCenter>
     </>
   )
 }
