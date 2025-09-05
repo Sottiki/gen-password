@@ -11,4 +11,5 @@ export default defineConfig({
         css: true, // CSS importを許容
         globals: true, // グローバルにdescribeやtestを使えるようにする
     },
+    base: '/gen-password/',
 });
