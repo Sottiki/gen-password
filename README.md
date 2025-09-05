@@ -1,5 +1,41 @@
-# gen-password
-Generate passwords from your favorite words, number sequences, and symbols.
+# Gen Password 🔑
+
+好みの単語・数字・記号を組み合わせて、安全なパスワードを生成できる Web アプリです。
+React + Vite + Chakra UI をベースに構築しています。
+
+---
+
+## 🚀 デモ
+👉 [公開ページはこちら](https://Sottiki.github.io/gen-password/)
+
+---
+
+## ✅ ステータス
+
+![CI](https://github.com/Sottiki/gen-password/actions/workflows/ci.yml/badge.svg)
+![Deploy](https://github.com/Sottiki/gen-password/actions/workflows/deploy.yml/badge.svg)
+![GitHub Pages](https://img.shields.io/website?url=https%3A%2F%2FSottiki.github.io%2Fgen-password%2F)
+
+---
+
+## 🛠️ 技術スタック
+- [Vite](https://vitejs.dev/)（開発ビルドツール）
+- [React](https://react.dev/)（UIライブラリ）
+- [Chakra UI](https://chakra-ui.com/)（UIコンポーネント）
+- [Biome](https://biomejs.dev/)（Lint & Format）
+- [Vitest](https://vitest.dev/)（テストランナー）
+- [GitHub Actions](https://docs.github.com/en/actions)（CI/CD）
+- [GitHub Pages](https://pages.github.com/)（ホスティング）
+
+---
+
+## 📦 セットアップ
+
+```bash
+git clone https://github.com/Sottiki/gen-password.git
+cd gen-password
+npm install
+npm run dev
 
 # React + Vite
 
