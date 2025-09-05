@@ -1,5 +1,5 @@
+import { AbsoluteCenter, Avatar, Button, Card } from '@chakra-ui/react';
 import { useState } from 'react';
-import { Button, Card, Avatar, AbsoluteCenter } from '@chakra-ui/react';
 
 function App() {
     const [count, setCount] = useState(0);

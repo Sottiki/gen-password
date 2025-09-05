@@ -10,7 +10,7 @@ test('ボタンをクリックするとカウントが増える', async () => {
             <App />
         </Provider>,
     );
-    const btn = screen.getByRole('button', { name: /lick me/i });
+    const btn = screen.getByRole('button', { name: /click me/i });
     await user.click(btn);
     expect(screen.getByText(/count is 1/i)).toBeInTheDocument();
 });
