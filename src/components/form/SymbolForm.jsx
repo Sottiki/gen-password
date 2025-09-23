@@ -1,13 +1,13 @@
 import { Field, Input } from '@chakra-ui/react';
 
-export function NumberForm() {
+export function SymbolForm() {
     return (
         <Field.Root required>
             <Field.Label>
-                好きな数字4桁を入力してください
+                パスワードに混ぜる記号を入力してください
                 <Field.RequiredIndicator />
             </Field.Label>
-            <Input name="number" placeholder="例:0504" />
+            <Input name="symbol" placeholder="例: @#$%&" fontFamily="monospace" />
             {/* TODO：エラー表示追加 */}
         </Field.Root>
     );
