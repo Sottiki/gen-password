@@ -80,3 +80,53 @@ describe('数字入力フォームのバリデーション', () => {
         },
     );
 });
+
+/**  キーワード入力フォームのテスト
+ */
+const getWordInput = () => screen.getByLabelText('パスワードに使用するキーワード*');
+
+describe('キーワード入力フォームのバリデーション', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('空入力のときにエラーメッセージが表示される', async () => {
+        const wordInput = getWordInput();
+        if (wordInput.value) {
+            await user.clear(wordInput);
+        }
+        await user.click(wordInput);
+        await user.tab(); // フォーカスアウト
+        expect(screen.getByText('キーワードを入力してください')).toBeInTheDocument();
+    });
+    
+    test.each(['a', 'abc', 'abcd', 'abcde'])(
+        '4文字以上の入力: %s のときにエラーメッセージが表示される',
+        async (input) => {
+            const wordInput = getWordInput();
+            if (wordInput.value) {
+                await user.clear(wordInput);
+            }
+            await user.type(wordInput, input);
+            await user.tab(); // フォーカスアウト
+            if (input.length < 4) {
+                expect(screen.getByText('4文字以上のキーワードを入力してください')).toBeInTheDocument();
+            } else {
+                expect(screen.queryByText('4文字以上のキーワードを入力してください')).not.toBeInTheDocument();
+            }
+        }
+    );
+
+    test('アルファベット以外の文字が混ざっている時', async () => {
+        const wordInput = getWordInput();
+        if (wordInput.value) {
+            await user.clear(wordInput);
+        }
+        await user.type(wordInput, 'abc1');
+        await user.tab(); // フォーカスアウト
+        expect(screen.getByText('キーワードにはアルファベットのみを使用してください')).toBeInTheDocument();
+    });
+});

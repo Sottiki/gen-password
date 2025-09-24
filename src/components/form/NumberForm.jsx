@@ -30,7 +30,11 @@ export function NumberForm() {
                 onChange={(e) => setValue(e.target.value)}
                 onBlur={handleBlur}
             />
-            <Field.ErrorText>{error}</Field.ErrorText>
+            {error ? (
+                <Field.ErrorText>{error}</Field.ErrorText>
+            ) : (
+                <Field.HelperText>0始まりでもいいよ</Field.HelperText>
+            )}{' '}
         </Field.Root>
     );
 }
