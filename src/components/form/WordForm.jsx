@@ -33,10 +33,17 @@ export function WordForm() {
             <Input
                 name="keyword"
                 placeholder="例：naruto"
+                value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onBlur={handleBlur}
             />
-            {error && <Field.ErrorText>{error}</Field.ErrorText>}
+            {error ? (
+                <Field.ErrorText>{error}</Field.ErrorText>
+            ) : (
+                <Field.HelperText>
+                    4文字以上、大文字、小文字もしくはその両方を含む英字
+                </Field.HelperText>
+            )}
         </Field.Root>
     );
 }
