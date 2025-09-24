@@ -81,7 +81,8 @@ describe('数字入力フォームのバリデーション', () => {
     );
 });
 
-/**  キーワード入力フォームのテスト
+/**
+ * キーワード入力フォームのテスト
  */
 const getWordInput = () => screen.getByLabelText('パスワードに使用するキーワード*');
 
@@ -102,7 +103,7 @@ describe('キーワード入力フォームのバリデーション', () => {
         await user.tab(); // フォーカスアウト
         expect(screen.getByText('キーワードを入力してください')).toBeInTheDocument();
     });
-    
+
     test.each(['a', 'abc', 'abcd', 'abcde'])(
         '4文字以上の入力: %s のときにエラーメッセージが表示される',
         async (input) => {
@@ -113,11 +114,15 @@ describe('キーワード入力フォームのバリデーション', () => {
             await user.type(wordInput, input);
             await user.tab(); // フォーカスアウト
             if (input.length < 4) {
-                expect(screen.getByText('4文字以上のキーワードを入力してください')).toBeInTheDocument();
+                expect(
+                    screen.getByText('4文字以上のキーワードを入力してください'),
+                ).toBeInTheDocument();
             } else {
-                expect(screen.queryByText('4文字以上のキーワードを入力してください')).not.toBeInTheDocument();
+                expect(
+                    screen.queryByText('4文字以上のキーワードを入力してください'),
+                ).not.toBeInTheDocument();
             }
-        }
+        },
     );
 
     test('アルファベット以外の文字が混ざっている時', async () => {
@@ -127,6 +132,71 @@ describe('キーワード入力フォームのバリデーション', () => {
         }
         await user.type(wordInput, 'abc1');
         await user.tab(); // フォーカスアウト
-        expect(screen.getByText('キーワードにはアルファベットのみを使用してください')).toBeInTheDocument();
+        expect(
+            screen.getByText('キーワードにはアルファベットのみを使用してください'),
+        ).toBeInTheDocument();
+    });
+});
+
+/**
+ * 記号入力フォームのテスト
+ */
+const getSymbolInput = () => screen.getByLabelText('パスワードに混ぜる記号を入力してください*');
+describe('記号入力フォームのバリデーション', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('空入力のときにエラーメッセージが表示される', async () => {
+        const symbolInput = getSymbolInput();
+        if (symbolInput.value) {
+            await user.clear(symbolInput);
+        }
+        await user.click(symbolInput);
+        await user.tab(); // フォーカスアウト
+        expect(screen.getByText('1文字以上の記号を入力してください')).toBeInTheDocument();
+    });
+
+    test.each(['abc', '123', 'abc123', 'あいうえお', 'abc 123'])(
+        '特殊文字以外の文字が混ざっている時: %s のときにエラーメッセージが表示される',
+        async (input) => {
+            const symbolInput = getSymbolInput();
+            if (symbolInput.value) {
+                await user.clear(symbolInput);
+            }
+            await user.type(symbolInput, input);
+            await user.tab(); // フォーカスアウト
+            expect(screen.getByText('記号には特殊文字のみを使用してください')).toBeInTheDocument();
+        },
+    );
+
+    test.each([
+        '@',
+        '#$%&',
+        '!-/:-@',
+        '[]', // [] を直接入力
+        '`',
+        '{', // { を直接入力
+        '-',
+        '~',
+    ])('有効な入力: %s のときにエラーメッセージが表示されない', async (input) => {
+        const symbolInput = getSymbolInput();
+        if (symbolInput.value) {
+            await user.clear(symbolInput);
+        }
+        // 特殊文字（[]や{）は直接valueにセット
+        if (input === '[]' || input === '{') {
+            symbolInput.value = input;
+        } else {
+            await user.type(symbolInput, input);
+        }
+        await user.tab(); // フォーカスアウト
+        // エラーメッセージが空であること
+        expect(
+            screen.queryByText('記号には特殊文字のみを使用してください'),
+        ).not.toBeInTheDocument();
     });
 });
