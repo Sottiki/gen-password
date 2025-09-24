@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { validateFourDigit } from '@/components/form/NumberForm';
 import { validateKeyword } from '@/components/form/WordForm';
+import { validateSymbol } from '@/components/form/SymbolForm';
 
 
 function sum(a, b) {
@@ -48,4 +49,25 @@ describe('validateKeyword', () => {
         const result = validateKeyword('abcd');
         expect(result).toBe('');
     });
+});
+
+describe('validateSymbol', () => {
+    test.each([
+        ['', '1文字以上の記号を入力してください'], // 空
+        ['abc', '記号には特殊文字のみを使用してください'], // 英字のみ
+        ['123', '記号には特殊文字のみを使用してください'], // 数字のみ
+        ['abc123', '記号には特殊文字のみを使用してください'], // 英数字
+        ['あいうえお', '記号には特殊文字のみを使用してください'], // 非記号
+        ['abc 123', '記号には特殊文字のみを使用してください'], // 空白含み
+    ])('無効な入力: %s のときにエラーメッセージが返ること', (input, expected) => {
+        const result = validateSymbol(input);
+        expect(result).toBe(expected);
+    });
+    test.each(['@', '#$%&', '!-/:-@[-`{-~'])(
+        '有効な入力: %s のときに空文字が返ること',
+        (input) => {
+            const result = validateSymbol(input);
+            expect(result).toBe('');
+        },
+    );
 });
