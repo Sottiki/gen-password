@@ -30,7 +30,7 @@ export function NumberForm() {
                 onChange={(e) => setValue(e.target.value)}
                 onBlur={handleBlur}
             />
-            <Field.ErrorText>{error}</Field.ErrorText>
+            {error && <Field.ErrorText>{error}</Field.ErrorText>}
         </Field.Root>
     );
 }
