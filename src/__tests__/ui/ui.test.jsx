@@ -173,19 +173,30 @@ describe('記号入力フォームのバリデーション', () => {
         },
     );
 
-    test.each(['@', '#$%&', '!-/:-@[-`{-~'])(
-        '有効な入力: %s のときにエラーメッセージが表示されない',
-        async (input) => {
-            const symbolInput = getSymbolInput();
-            if (symbolInput.value) {
-                await user.clear(symbolInput);
-            }
+    test.each([
+        '@',
+        '#$%&',
+        '!-/:-@',
+        '[]', // [] を直接入力
+        '`',
+        '{', // { を直接入力
+        '-',
+        '~',
+    ])('有効な入力: %s のときにエラーメッセージが表示されない', async (input) => {
+        const symbolInput = getSymbolInput();
+        if (symbolInput.value) {
+            await user.clear(symbolInput);
+        }
+        // 特殊文字（[]や{）は直接valueにセット
+        if (input === '[]' || input === '{') {
+            symbolInput.value = input;
+        } else {
             await user.type(symbolInput, input);
-            await user.tab(); // フォーカスアウト
-            // エラーメッセージが空であること
-            expect(
-                screen.queryByText('記号には特殊文字のみを使用してください'),
-            ).not.toBeInTheDocument();
-        },
-    );
+        }
+        await user.tab(); // フォーカスアウト
+        // エラーメッセージが空であること
+        expect(
+            screen.queryByText('記号には特殊文字のみを使用してください'),
+        ).not.toBeInTheDocument();
+    });
 });
