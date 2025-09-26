@@ -1,4 +1,4 @@
-# Gen Password 🔑
+# Gen Password 🔑　WIP!
 
 好みの単語・数字・記号を組み合わせて、パスワードを生成できる Web アプリです。
 React + Vite + Chakra UI をベースに構築しています。
