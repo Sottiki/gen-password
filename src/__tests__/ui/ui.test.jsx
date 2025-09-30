@@ -200,3 +200,27 @@ describe('記号入力フォームのバリデーション', () => {
         ).not.toBeInTheDocument();
     });
 });
+
+test('パスワード生成ボタンをクリック', async () => {
+    const user = userEvent.setup();
+    render(
+        <Provider>
+            <App />
+        </Provider>,
+    );
+
+    const generateButton = screen.getByRole('button', { name: '生成' });
+    expect(generateButton).toBeInTheDocument();
+
+    await user.click(generateButton);
+    
+    // ラベルテキストで要素を探す
+    const label = await screen.findByText('生成されたパスワード');
+    expect(label).toBeInTheDocument();
+    
+    // 生成されたパスワードの入力欄を取得
+    const resultInput = await screen.findByDisplayValue('generated-password');
+    expect(resultInput).toBeInTheDocument();
+    expect(resultInput.value).not.toBe(''); // 空でないこと
+    expect(resultInput.value.length).toBeGreaterThan(0); // 長さが0より大きいこと
+});
