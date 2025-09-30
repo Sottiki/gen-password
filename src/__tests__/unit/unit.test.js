@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { validateFourDigit } from '@/components/form/NumberForm';
-import { validateKeyword } from '@/components/form/WordForm';
 import { validateSymbol } from '@/components/form/SymbolForm';
-
+import { validateKeyword } from '@/components/form/WordForm';
+import { generatePassword } from '@/lib/genPassWord';
 
 function sum(a, b) {
     return a + b;
@@ -63,11 +63,17 @@ describe('validateSymbol', () => {
         const result = validateSymbol(input);
         expect(result).toBe(expected);
     });
-    test.each(['@', '#$%&', '!-/:-@[-`{-~'])(
-        '有効な入力: %s のときに空文字が返ること',
-        (input) => {
-            const result = validateSymbol(input);
-            expect(result).toBe('');
-        },
-    );
+    test.each(['@', '#$%&', '!-/:-@[-`{-~'])('有効な入力: %s のときに空文字が返ること', (input) => {
+        const result = validateSymbol(input);
+        expect(result).toBe('');
+    });
+});
+
+describe('generatePassword', () => {
+    test('パスワード文字列を返す', () => {
+        const password = generatePassword();
+        expect(typeof password).toBe('string');
+        expect(password.length).toBeGreaterThan(0);
+        expect(password).toBe('generated-password'); // 現状の実装に基づく期待値
+    });
 });
