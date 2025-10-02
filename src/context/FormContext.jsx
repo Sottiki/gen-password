@@ -7,6 +7,16 @@ export function FormProvider({ children }) {
     const [keyword, setKeyword] = useState('');
     const [symbol, setSymbol] = useState('');
 
+    // 各フォームのエラー状態
+    const [numberError, setNumberError] = useState('');
+    const [keywordError, setKeywordError] = useState('');
+    const [symbolError, setSymbolError] = useState('');
+
+    // 全てのフォームが有効かどうかをチェック
+    const isValid = () => {
+        return !numberError && !keywordError && !symbolError;
+    };
+
     return (
         <FormContext.Provider
             value={{
@@ -16,6 +26,13 @@ export function FormProvider({ children }) {
                 setKeyword,
                 symbol,
                 setSymbol,
+                numberError,
+                setNumberError,
+                keywordError,
+                setKeywordError,
+                symbolError,
+                setSymbolError,
+                isValid,
             }}
         >
             {children}

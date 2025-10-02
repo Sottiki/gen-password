@@ -201,6 +201,75 @@ describe('記号入力フォームのバリデーション', () => {
     });
 });
 
+describe('パスワード生成時のバリデーション', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('未入力の状態で生成ボタンを押すとエラーが表示される', async () => {
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        // 各フォームにエラーメッセージが表示される
+        expect(screen.getByText('4桁の数字を入力してください')).toBeInTheDocument();
+        expect(screen.getByText('キーワードを入力してください')).toBeInTheDocument();
+        expect(screen.getByText('1文字以上の記号を入力してください')).toBeInTheDocument();
+    });
+
+    test('一部のフォームが未入力の状態で生成ボタンを押すとエラーが表示される', async () => {
+        // 数字フォームだけ入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        // 未入力のフォームにエラーが表示される
+        expect(screen.getByText('キーワードを入力してください')).toBeInTheDocument();
+        expect(screen.getByText('1文字以上の記号を入力してください')).toBeInTheDocument();
+
+        // 入力済みのフォームにはエラーが出ない
+        expect(screen.queryByText('4桁の数字を入力してください')).not.toBeInTheDocument();
+    });
+
+    test('無効な値で生成ボタンを押すとエラーが表示される', async () => {
+        // 無効な値を入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '123'); // 3桁
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'ab'); // 2文字
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, 'abc'); // 記号ではない
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        // 各フォームにエラーメッセージが表示される
+        expect(screen.getByText('4桁の数字を入力してください')).toBeInTheDocument();
+        expect(screen.getByText('4文字以上のキーワードを入力してください')).toBeInTheDocument();
+        expect(screen.getByText('記号には特殊文字のみを使用してください')).toBeInTheDocument();
+    });
+
+    test('エラーがある状態で入力を修正するとエラーが消える', async () => {
+        // まず生成ボタンを押してエラーを表示
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        expect(screen.getByText('4桁の数字を入力してください')).toBeInTheDocument();
+
+        // 正しい値を入力するとエラーが消える
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        expect(screen.queryByText('4桁の数字を入力してください')).not.toBeInTheDocument();
+    });
+});
+
 describe('パスワード生成機能の統合テスト', () => {
     let user;
 
