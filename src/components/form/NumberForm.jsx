@@ -1,5 +1,5 @@
 import { Field, Input } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useFormContext } from '../../context/FormContext';
 
 export function validateFourDigit(val) {
     if (!/^\d{4}$/.test(val)) {
@@ -9,16 +9,24 @@ export function validateFourDigit(val) {
 }
 
 export function NumberForm() {
-    const [value, setValue] = useState('');
-    const [error, setError] = useState('');
+    const { number, setNumber, numberError, setNumberError } = useFormContext();
 
     const handleBlur = (e) => {
         const val = e.target.value;
-        setError(validateFourDigit(val));
+        const error = validateFourDigit(val);
+        setNumberError(error);
+    };
+
+    const handleChange = (e) => {
+        setNumber(e.target.value);
+        // 入力中はエラーをクリア
+        if (numberError) {
+            setNumberError('');
+        }
     };
 
     return (
-        <Field.Root required invalid={!!error}>
+        <Field.Root required invalid={!!numberError}>
             <Field.Label>
                 好きな数字4桁を入力してください
                 <Field.RequiredIndicator />
@@ -26,12 +34,12 @@ export function NumberForm() {
             <Input
                 name="number"
                 placeholder="例:0504"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={number}
+                onChange={handleChange}
                 onBlur={handleBlur}
             />
-            {error ? (
-                <Field.ErrorText>{error}</Field.ErrorText>
+            {numberError ? (
+                <Field.ErrorText>{numberError}</Field.ErrorText>
             ) : (
                 <Field.HelperText>0始まりでもいいよ</Field.HelperText>
             )}{' '}

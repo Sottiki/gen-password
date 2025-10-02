@@ -1,5 +1,5 @@
 import { Field, Input } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useFormContext } from '../../context/FormContext';
 
 export function validateSymbol(val) {
     if (val.trim() === '') {
@@ -12,16 +12,24 @@ export function validateSymbol(val) {
 }
 
 export function SymbolForm() {
-    const [value, setValue] = useState('');
-    const [error, setError] = useState('');
+    const { symbol, setSymbol, symbolError, setSymbolError } = useFormContext();
 
     const handleBlur = (e) => {
         const val = e.target.value;
-        setError(validateSymbol(val));
+        const error = validateSymbol(val);
+        setSymbolError(error);
+    };
+
+    const handleChange = (e) => {
+        setSymbol(e.target.value);
+        // 入力中はエラーをクリア
+        if (symbolError) {
+            setSymbolError('');
+        }
     };
 
     return (
-        <Field.Root required invalid={!!error}>
+        <Field.Root required invalid={!!symbolError}>
             <Field.Label>
                 パスワードに混ぜる記号を入力してください
                 <Field.RequiredIndicator />
@@ -30,12 +38,12 @@ export function SymbolForm() {
                 name="symbol"
                 placeholder="例: @#$%&"
                 fontFamily="monospace"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={symbol}
+                onChange={handleChange}
                 onBlur={handleBlur}
             />
-            {error ? (
-                <Field.ErrorText>{error}</Field.ErrorText>
+            {symbolError ? (
+                <Field.ErrorText>{symbolError}</Field.ErrorText>
             ) : (
                 <Field.HelperText>1文字以上の記号を入力してください</Field.HelperText>
             )}

@@ -1,5 +1,5 @@
 import { Field, Input } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useFormContext } from '../../context/FormContext';
 
 export function validateKeyword(val) {
     if (val.trim() === '') {
@@ -15,16 +15,24 @@ export function validateKeyword(val) {
 }
 
 export function WordForm() {
-    const [value, setValue] = useState('');
-    const [error, setError] = useState('');
+    const { keyword, setKeyword, keywordError, setKeywordError } = useFormContext();
 
     const handleBlur = (e) => {
         const val = e.target.value;
-        setError(validateKeyword(val));
+        const error = validateKeyword(val);
+        setKeywordError(error);
+    };
+
+    const handleChange = (e) => {
+        setKeyword(e.target.value);
+        // 入力中はエラーをクリア
+        if (keywordError) {
+            setKeywordError('');
+        }
     };
 
     return (
-        <Field.Root required invalid={!!error}>
+        <Field.Root required invalid={!!keywordError}>
             <Field.Label>
                 パスワードに使用するキーワード
                 <Field.RequiredIndicator />
@@ -33,12 +41,12 @@ export function WordForm() {
             <Input
                 name="keyword"
                 placeholder="例：naruto"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={keyword}
+                onChange={handleChange}
                 onBlur={handleBlur}
             />
-            {error ? (
-                <Field.ErrorText>{error}</Field.ErrorText>
+            {keywordError ? (
+                <Field.ErrorText>{keywordError}</Field.ErrorText>
             ) : (
                 <Field.HelperText>
                     4文字以上、大文字、小文字もしくはその両方を含む英字
