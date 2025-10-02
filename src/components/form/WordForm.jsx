@@ -1,5 +1,6 @@
 import { Field, Input } from '@chakra-ui/react';
 import { useState } from 'react';
+import { useFormContext } from '../../context/FormContext';
 
 export function validateKeyword(val) {
     if (val.trim() === '') {
@@ -15,7 +16,7 @@ export function validateKeyword(val) {
 }
 
 export function WordForm() {
-    const [value, setValue] = useState('');
+    const { keyword, setKeyword } = useFormContext();
     const [error, setError] = useState('');
 
     const handleBlur = (e) => {
@@ -33,8 +34,8 @@ export function WordForm() {
             <Input
                 name="keyword"
                 placeholder="例：naruto"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
                 onBlur={handleBlur}
             />
             {error ? (

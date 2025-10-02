@@ -1,5 +1,6 @@
 import { Field, Input } from '@chakra-ui/react';
 import { useState } from 'react';
+import { useFormContext } from '../../context/FormContext';
 
 export function validateFourDigit(val) {
     if (!/^\d{4}$/.test(val)) {
@@ -9,7 +10,7 @@ export function validateFourDigit(val) {
 }
 
 export function NumberForm() {
-    const [value, setValue] = useState('');
+    const { number, setNumber } = useFormContext();
     const [error, setError] = useState('');
 
     const handleBlur = (e) => {
@@ -26,8 +27,8 @@ export function NumberForm() {
             <Input
                 name="number"
                 placeholder="例:0504"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
                 onBlur={handleBlur}
             />
             {error ? (

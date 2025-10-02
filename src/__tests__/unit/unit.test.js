@@ -71,9 +71,53 @@ describe('validateSymbol', () => {
 
 describe('generatePassword', () => {
     test('パスワード文字列を返す', () => {
-        const password = generatePassword();
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '@#$';
+        const password = generatePassword(number, keyword, symbol);
         expect(typeof password).toBe('string');
-        expect(password.length).toBeGreaterThan(0);
-        expect(password).toBe('generated-password'); // 現状の実装に基づく期待値
+        expect(password.length).toBe(11); // 4 + 4 + 3
+    });
+
+    test('入力した全ての文字が含まれる', () => {
+        const number = '5678';
+        const keyword = 'test';
+        const symbol = '!@';
+        const password = generatePassword(number, keyword, symbol);
+
+        // 数字が全て含まれる
+        expect(password).toContain('5');
+        expect(password).toContain('6');
+        expect(password).toContain('7');
+        expect(password).toContain('8');
+
+        // キーワードの文字が全て含まれる
+        expect(password).toContain('t');
+        expect(password).toContain('e');
+        expect(password).toContain('s');
+
+        // 記号が全て含まれる
+        expect(password).toContain('!');
+        expect(password).toContain('@');
+    });
+
+    test('塊でシャッフルされる（各パーツが連続している）', () => {
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '@#$';
+        const password = generatePassword(number, keyword, symbol);
+
+        // いずれかのパターンにマッチすることを確認（3つのパーツの順序が保たれている）
+        const possiblePatterns = [
+            /1234.*abcd.*@#\$/,
+            /1234.*@#\$.*abcd/,
+            /abcd.*1234.*@#\$/,
+            /abcd.*@#\$.*1234/,
+            /@#\$.*1234.*abcd/,
+            /@#\$.*abcd.*1234/,
+        ];
+
+        const matchesPattern = possiblePatterns.some((pattern) => pattern.test(password));
+        expect(matchesPattern).toBe(true);
     });
 });
