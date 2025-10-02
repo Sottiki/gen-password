@@ -201,26 +201,137 @@ describe('記号入力フォームのバリデーション', () => {
     });
 });
 
-test('パスワード生成ボタンをクリック', async () => {
-    const user = userEvent.setup();
-    render(
-        <Provider>
-            <App />
-        </Provider>,
-    );
+describe('パスワード生成機能の統合テスト', () => {
+    let user;
 
-    const generateButton = screen.getByRole('button', { name: '生成' });
-    expect(generateButton).toBeInTheDocument();
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
 
-    await user.click(generateButton);
-    
-    // ラベルテキストで要素を探す
-    const label = await screen.findByText('生成されたパスワード');
-    expect(label).toBeInTheDocument();
-    
-    // 生成されたパスワードの入力欄を取得
-    const resultInput = await screen.findByDisplayValue('generated-password');
-    expect(resultInput).toBeInTheDocument();
-    expect(resultInput.value).not.toBe(''); // 空でないこと
-    expect(resultInput.value.length).toBeGreaterThan(0); // 長さが0より大きいこと
+    test('全てのフォームに入力してパスワードを生成できる', async () => {
+        // 各フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        // 生成ボタンをクリック
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        // 生成されたパスワードが表示される
+        const label = await screen.findByText('生成されたパスワード');
+        expect(label).toBeInTheDocument();
+
+        // 生成されたパスワードの長さを確認
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        expect(resultInput.value).not.toBe('');
+        expect(resultInput.value.length).toBe(11); // 4 + 4 + 3
+    });
+
+    test('生成されたパスワードに入力した文字が全て含まれる', async () => {
+        // 各フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '5678');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'abcd');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '!@');
+
+        // 生成ボタンをクリック
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        // 生成されたパスワードを取得
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        const password = resultInput.value;
+
+        // 全ての文字が含まれていることを確認
+        expect(password).toContain('5');
+        expect(password).toContain('6');
+        expect(password).toContain('7');
+        expect(password).toContain('8');
+        expect(password).toContain('a');
+        expect(password).toContain('b');
+        expect(password).toContain('c');
+        expect(password).toContain('d');
+        expect(password).toContain('!');
+        expect(password).toContain('@');
+    });
+
+    test('生成ボタンを複数回押すとパスワードが変わる（ランダム性の確認）', async () => {
+        // 各フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+
+        // 1回目の生成
+        await user.click(generateButton);
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        const password1 = resultInput.value;
+
+        // 2回目の生成
+        await user.click(generateButton);
+        const password2 = resultInput.value;
+
+        // 3回目の生成
+        await user.click(generateButton);
+        const password3 = resultInput.value;
+
+        // 少なくとも1つは異なるパスワードが生成されることを確認
+        // （全て同じになる確率は非常に低い）
+        const passwords = [password1, password2, password3];
+        const uniquePasswords = new Set(passwords);
+        expect(uniquePasswords.size).toBeGreaterThan(1);
+    });
+
+    test('異なる入力で異なるパスワードが生成される', async () => {
+        // 1回目：最初の入力でパスワード生成
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        const password1 = resultInput.value;
+
+        // 2回目：異なる入力でパスワード生成
+        await user.clear(numberInput);
+        await user.type(numberInput, '5678');
+
+        await user.clear(wordInput);
+        await user.type(wordInput, 'abcd');
+
+        await user.clear(symbolInput);
+        await user.type(symbolInput, '!@');
+
+        await user.click(generateButton);
+        const password2 = resultInput.value;
+
+        // 入力が異なれば、生成されるパスワードも異なる
+        expect(password1).not.toBe(password2);
+        expect(password1.length).toBe(11);
+        expect(password2.length).toBe(10); // 5678(4) + abcd(4) + !@(2)
+    });
 });
