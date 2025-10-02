@@ -293,6 +293,9 @@ describe('パスワード生成機能の統合テスト', () => {
         const generateButton = screen.getByRole('button', { name: '生成' });
         await user.click(generateButton);
 
+        // ローディング完了を待機
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
         // 生成されたパスワードが表示される
         const label = await screen.findByText('生成されたパスワード');
         expect(label).toBeInTheDocument();
@@ -317,6 +320,9 @@ describe('パスワード生成機能の統合テスト', () => {
         // 生成ボタンをクリック
         const generateButton = screen.getByRole('button', { name: '生成' });
         await user.click(generateButton);
+
+        // ローディング完了を待機
+        await new Promise((resolve) => setTimeout(resolve, 1100));
 
         // 生成されたパスワードを取得
         const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
@@ -347,18 +353,21 @@ describe('パスワード生成機能の統合テスト', () => {
         await user.type(symbolInput, '@#$');
 
         const generateButton = screen.getByRole('button', { name: '生成' });
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
 
         // 1回目の生成
         await user.click(generateButton);
-        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        await new Promise((resolve) => setTimeout(resolve, 1100));
         const password1 = resultInput.value;
 
         // 2回目の生成
         await user.click(generateButton);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
         const password2 = resultInput.value;
 
         // 3回目の生成
         await user.click(generateButton);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
         const password3 = resultInput.value;
 
         // 少なくとも1つは異なるパスワードが生成されることを確認
@@ -382,6 +391,9 @@ describe('パスワード生成機能の統合テスト', () => {
         const generateButton = screen.getByRole('button', { name: '生成' });
         await user.click(generateButton);
 
+        // ローディング完了を待機
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
         const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
         const password1 = resultInput.value;
 
@@ -396,11 +408,97 @@ describe('パスワード生成機能の統合テスト', () => {
         await user.type(symbolInput, '!@');
 
         await user.click(generateButton);
+
+        // ローディング完了を待機
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
         const password2 = resultInput.value;
 
         // 入力が異なれば、生成されるパスワードも異なる
         expect(password1).not.toBe(password2);
         expect(password1.length).toBe(11);
         expect(password2.length).toBe(10); // 5678(4) + abcd(4) + !@(2)
+    });
+});
+
+describe('ローディング機能のテスト', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('生成ボタンをクリックするとローディング状態になる', async () => {
+        // 各フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+
+        // 生成ボタンをクリック
+        await user.click(generateButton);
+
+        // ボタンが無効化されることを確認
+        expect(generateButton).toBeDisabled();
+    });
+
+    test('パスワード生成が完了するとローディング状態が解除される', async () => {
+        // 各フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+
+        // 生成ボタンをクリック
+        await user.click(generateButton);
+
+        // 少し待機（1秒以上）
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
+        // ボタンが再度有効になることを確認
+        expect(generateButton).not.toBeDisabled();
+
+        // パスワードが生成されていることを確認
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        expect(resultInput.value).not.toBe('');
+    });
+
+    test('ローディング中は連続クリックを防止する', async () => {
+        // 各フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+
+        // 生成ボタンをクリック
+        await user.click(generateButton);
+
+        // ボタンが無効化されていることを確認
+        expect(generateButton).toBeDisabled();
+
+        // ローディング完了を待機
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
+        // ローディング完了後、ボタンが再度有効になる
+        expect(generateButton).not.toBeDisabled();
     });
 });

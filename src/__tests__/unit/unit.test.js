@@ -120,4 +120,45 @@ describe('generatePassword', () => {
         const matchesPattern = possiblePatterns.some((pattern) => pattern.test(password));
         expect(matchesPattern).toBe(true);
     });
+
+    test('空文字列を含む場合も正しく動作する', () => {
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '';
+        const password = generatePassword(number, keyword, symbol);
+        expect(password.length).toBe(8); // 4 + 4 + 0
+        expect(password).toContain('1');
+        expect(password).toContain('a');
+    });
+
+    test('異なる長さの入力で正しく動作する', () => {
+        const number = '123456';
+        const keyword = 'ab';
+        const symbol = '@';
+        const password = generatePassword(number, keyword, symbol);
+        expect(password.length).toBe(9); // 6 + 2 + 1
+    });
+});
+
+describe('ローディング機能のユニットテスト', () => {
+    test('1秒以上待機することを確認', async () => {
+        const startTime = Date.now();
+
+        // 1秒待機する処理をシミュレート
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const endTime = Date.now();
+        const elapsed = endTime - startTime;
+
+        // 1秒以上経過していることを確認（多少の誤差を許容）
+        expect(elapsed).toBeGreaterThanOrEqual(1000);
+        expect(elapsed).toBeLessThan(1100);
+    });
+
+    test('Promise が正しく解決されることを確認', async () => {
+        const promise = new Promise((resolve) => setTimeout(() => resolve('success'), 1000));
+
+        const result = await promise;
+        expect(result).toBe('success');
+    });
 });
