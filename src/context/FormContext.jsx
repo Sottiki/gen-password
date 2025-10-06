@@ -12,6 +12,9 @@ export function FormProvider({ children }) {
     const [keywordError, setKeywordError] = useState('');
     const [symbolError, setSymbolError] = useState('');
 
+    // 複雑なパスワード生成モードのスイッチ
+    const [useComplexMode, setUseComplexMode] = useState(false);
+
     // 全てのフォームが有効かどうかをチェック
     const isValid = () => {
         return !numberError && !keywordError && !symbolError;
@@ -32,6 +35,8 @@ export function FormProvider({ children }) {
                 setKeywordError,
                 symbolError,
                 setSymbolError,
+                useComplexMode,
+                setUseComplexMode,
                 isValid,
             }}
         >

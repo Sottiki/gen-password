@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, test } from 'vitest';
 import App from '@/App';
@@ -294,7 +294,7 @@ describe('パスワード生成機能の統合テスト', () => {
         await user.click(generateButton);
 
         // ローディング完了を待機
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
 
         // 生成されたパスワードが表示される
         const label = await screen.findByText('生成されたパスワード');
@@ -322,7 +322,7 @@ describe('パスワード生成機能の統合テスト', () => {
         await user.click(generateButton);
 
         // ローディング完了を待機
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
 
         // 生成されたパスワードを取得
         const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
@@ -357,17 +357,17 @@ describe('パスワード生成機能の統合テスト', () => {
 
         // 1回目の生成
         await user.click(generateButton);
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
         const password1 = resultInput.value;
 
         // 2回目の生成
         await user.click(generateButton);
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
         const password2 = resultInput.value;
 
         // 3回目の生成
         await user.click(generateButton);
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
         const password3 = resultInput.value;
 
         // 少なくとも1つは異なるパスワードが生成されることを確認
@@ -392,7 +392,7 @@ describe('パスワード生成機能の統合テスト', () => {
         await user.click(generateButton);
 
         // ローディング完了を待機
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
 
         const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
         const password1 = resultInput.value;
@@ -410,7 +410,7 @@ describe('パスワード生成機能の統合テスト', () => {
         await user.click(generateButton);
 
         // ローディング完了を待機
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
 
         const password2 = resultInput.value;
 
@@ -418,6 +418,140 @@ describe('パスワード生成機能の統合テスト', () => {
         expect(password1).not.toBe(password2);
         expect(password1.length).toBe(11);
         expect(password2.length).toBe(10); // 5678(4) + abcd(4) + !@(2)
+    });
+});
+
+describe('複雑モードスイッチのテスト', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('スイッチラベルが表示される', () => {
+        expect(screen.getByText('複雑なパスワード生成モード')).toBeInTheDocument();
+        expect(screen.getByText('(文字レベルでシャッフル)')).toBeInTheDocument();
+        expect(screen.getByText('ON')).toBeInTheDocument();
+    });
+
+    test('スイッチをクリックして切り替えられる', async () => {
+        // Switch.Controlをクリック（data-part="control"で検索）
+        const switchControl = screen.getByText('複雑なパスワード生成モード').parentElement;
+
+        // スイッチをクリック
+        await user.click(switchControl);
+
+        // コンテキストの状態が変わったことを確認するため、パスワード生成で検証
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
+
+        // パスワードが生成されることを確認
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        expect(resultInput.value).not.toBe('');
+    });
+});
+
+describe('複雑モードでのパスワード生成テスト', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('複雑モードONの状態で正しくパスワードが生成される', async () => {
+        // 複雑モードをON（スイッチラベルをクリック）
+        const switchLabel = screen.getByText('複雑なパスワード生成モード').parentElement;
+        await user.click(switchLabel);
+
+        // フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '5678');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'abcd');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '!@');
+
+        // パスワード生成
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
+
+        // パスワードが生成されていることを確認
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        expect(resultInput.value).not.toBe('');
+        expect(resultInput.value.length).toBe(10); // 5678(4) + abcd(4) + !@(2)
+
+        // 入力した全ての文字が含まれることを確認
+        expect(resultInput.value).toContain('5');
+        expect(resultInput.value).toContain('6');
+        expect(resultInput.value).toContain('7');
+        expect(resultInput.value).toContain('8');
+        expect(resultInput.value).toContain('a');
+        expect(resultInput.value).toContain('b');
+        expect(resultInput.value).toContain('c');
+        expect(resultInput.value).toContain('d');
+        expect(resultInput.value).toContain('!');
+        expect(resultInput.value).toContain('@');
+    });
+
+    test('通常モードと複雑モードでパスワードが生成される', async () => {
+        // フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+
+        // 通常モードで生成
+        await user.click(generateButton);
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
+        const normalPassword = resultInput.value;
+        expect(normalPassword.length).toBe(11);
+
+        // 複雑モードに切り替え
+        const switchLabel = screen.getByText('複雑なパスワード生成モード').parentElement;
+        await user.click(switchLabel);
+
+        // 複雑モードで生成
+        await user.click(generateButton);
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
+        const complexPassword = resultInput.value;
+
+        // パスワードの長さが同じであることを確認
+        expect(complexPassword.length).toBe(11);
+
+        // 全ての文字が含まれていることを確認
+        expect(complexPassword).toContain('1');
+        expect(complexPassword).toContain('2');
+        expect(complexPassword).toContain('3');
+        expect(complexPassword).toContain('4');
+        expect(complexPassword).toContain('t');
+        expect(complexPassword).toContain('e');
+        expect(complexPassword).toContain('s');
+        expect(complexPassword).toContain('@');
+        expect(complexPassword).toContain('#');
+        expect(complexPassword).toContain('$');
     });
 });
 
@@ -465,8 +599,8 @@ describe('ローディング機能のテスト', () => {
         // 生成ボタンをクリック
         await user.click(generateButton);
 
-        // 少し待機（1秒以上）
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        // ローディング完了を待機
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
 
         // ボタンが再度有効になることを確認
         expect(generateButton).not.toBeDisabled();
@@ -496,7 +630,7 @@ describe('ローディング機能のテスト', () => {
         expect(generateButton).toBeDisabled();
 
         // ローディング完了を待機
-        await new Promise((resolve) => setTimeout(resolve, 1100));
+        await waitFor(() => expect(generateButton).not.toBeDisabled(), { timeout: 2000 });
 
         // ローディング完了後、ボタンが再度有効になる
         expect(generateButton).not.toBeDisabled();
