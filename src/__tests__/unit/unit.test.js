@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { validateFourDigit } from '@/components/form/NumberForm';
 import { validateSymbol } from '@/components/form/SymbolForm';
 import { validateKeyword } from '@/components/form/WordForm';
-import { generatePassword } from '@/lib/genPassWord';
+import { generatePassword, generateComplexPassword } from '@/lib/genPassWord';
 
 function sum(a, b) {
     return a + b;
@@ -137,6 +137,120 @@ describe('generatePassword', () => {
         const symbol = '@';
         const password = generatePassword(number, keyword, symbol);
         expect(password.length).toBe(9); // 6 + 2 + 1
+    });
+});
+
+describe('generateComplexPassword', () => {
+    test('パスワード文字列を返す', () => {
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '@#$';
+        const password = generateComplexPassword(number, keyword, symbol);
+        expect(typeof password).toBe('string');
+        expect(password.length).toBe(11); // 4 + 4 + 3
+    });
+
+    test('入力した全ての文字が含まれる', () => {
+        const number = '5678';
+        const keyword = 'test';
+        const symbol = '!@';
+        const password = generateComplexPassword(number, keyword, symbol);
+
+        // 数字が全て含まれる
+        expect(password).toContain('5');
+        expect(password).toContain('6');
+        expect(password).toContain('7');
+        expect(password).toContain('8');
+
+        // キーワードの文字が全て含まれる
+        expect(password).toContain('t');
+        expect(password).toContain('e');
+        expect(password).toContain('s');
+
+        // 記号が全て含まれる
+        expect(password).toContain('!');
+        expect(password).toContain('@');
+    });
+
+    test('文字レベルでシャッフルされる（塊ではない）', () => {
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '@#$';
+
+        // 複数回実行して、少なくとも1回は塊でない結果が出ることを確認
+        let hasNonBlockPattern = false;
+        for (let i = 0; i < 100; i++) {
+            const password = generateComplexPassword(number, keyword, symbol);
+
+            // 塊パターン（各パーツが連続している）
+            const blockPatterns = [
+                /1234.*abcd.*@#\$/,
+                /1234.*@#\$.*abcd/,
+                /abcd.*1234.*@#\$/,
+                /abcd.*@#\$.*1234/,
+                /@#\$.*1234.*abcd/,
+                /@#\$.*abcd.*1234/,
+            ];
+
+            const isBlockPattern = blockPatterns.some((pattern) => pattern.test(password));
+            if (!isBlockPattern) {
+                hasNonBlockPattern = true;
+                break;
+            }
+        }
+
+        expect(hasNonBlockPattern).toBe(true);
+    });
+
+    test('各ジャンルの文字数が正しい', () => {
+        const number = '123456';
+        const keyword = 'password';
+        const symbol = '@#$%';
+        const password = generateComplexPassword(number, keyword, symbol);
+
+        // 数字の文字数
+        const numberCount = password.split('').filter((c) => /\d/.test(c)).length;
+        expect(numberCount).toBe(6);
+
+        // アルファベットの文字数
+        const alphaCount = password.split('').filter((c) => /[a-z]/i.test(c)).length;
+        expect(alphaCount).toBe(8);
+
+        // 記号の文字数
+        const symbolCount = password.split('').filter((c) => /[@#$%]/.test(c)).length;
+        expect(symbolCount).toBe(4);
+    });
+
+    test('空文字列を含む場合も正しく動作する', () => {
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '';
+        const password = generateComplexPassword(number, keyword, symbol);
+        expect(password.length).toBe(8); // 4 + 4 + 0
+        expect(password).toContain('1');
+        expect(password).toContain('a');
+    });
+
+    test('異なる長さの入力で正しく動作する', () => {
+        const number = '123456';
+        const keyword = 'ab';
+        const symbol = '@';
+        const password = generateComplexPassword(number, keyword, symbol);
+        expect(password.length).toBe(9); // 6 + 2 + 1
+    });
+
+    test('同じ入力でも異なる結果が生成される（ランダム性の確認）', () => {
+        const number = '1234';
+        const keyword = 'abcd';
+        const symbol = '@#$';
+
+        const passwords = new Set();
+        for (let i = 0; i < 10; i++) {
+            passwords.add(generateComplexPassword(number, keyword, symbol));
+        }
+
+        // 10回生成して少なくとも2つ以上の異なるパスワードが生成されることを確認
+        expect(passwords.size).toBeGreaterThan(1);
     });
 });
 
