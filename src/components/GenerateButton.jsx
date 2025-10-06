@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@chakra-ui/react';
 import { useFormContext } from '../context/FormContext';
-import { generatePassword } from '../lib/genPassWord';
+import { generatePassword, generateComplexPassword } from '../lib/genPassWord';
 import { validateFourDigit } from './form/NumberForm';
 import { validateKeyword } from './form/WordForm';
 import { validateSymbol } from './form/SymbolForm';
@@ -11,6 +11,7 @@ export default function GenerateButton({ onGenerate }) {
         number,
         keyword,
         symbol,
+        useComplexMode,
         setNumberError,
         setKeywordError,
         setSymbolError,
@@ -40,7 +41,10 @@ export default function GenerateButton({ onGenerate }) {
             // 意図的に1秒待機、理由は生成してそうな感じが出るから
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            const pw = generatePassword(number, keyword, symbol);
+            // 複雑モードの切り替え
+            const pw = useComplexMode
+                ? generateComplexPassword(number, keyword, symbol)
+                : generatePassword(number, keyword, symbol);
             onGenerate(pw);
         } catch (e) {
             console.error(e);

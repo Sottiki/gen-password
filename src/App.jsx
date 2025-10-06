@@ -1,5 +1,6 @@
 import { Box, Container, Stack } from '@chakra-ui/react';
 import { useState } from 'react';
+import { ComplexModeSwitch } from './components/ComplexModeSwitch';
 import { NumberForm } from './components/form/NumberForm';
 import { SymbolForm } from './components/form/SymbolForm';
 import { WordForm } from './components/form/WordForm';
@@ -14,6 +15,7 @@ function App() {
         <FormProvider>
             <Container maxW="md" py={10}>
                 <Box boxShadow="md" borderRadius="lg" p={8}>
+                    <ComplexModeSwitch />
                     <Stack spacing={6}>
                         <NumberForm />
                         <WordForm />

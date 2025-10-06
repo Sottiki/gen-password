@@ -421,6 +421,140 @@ describe('パスワード生成機能の統合テスト', () => {
     });
 });
 
+describe('複雑モードスイッチのテスト', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('スイッチラベルが表示される', () => {
+        expect(screen.getByText('複雑なパスワード生成モード')).toBeInTheDocument();
+        expect(screen.getByText('(文字レベルでシャッフル)')).toBeInTheDocument();
+        expect(screen.getByText('ON')).toBeInTheDocument();
+    });
+
+    test('スイッチをクリックして切り替えられる', async () => {
+        // Switch.Controlをクリック（data-part="control"で検索）
+        const switchControl = screen.getByText('複雑なパスワード生成モード').parentElement;
+
+        // スイッチをクリック
+        await user.click(switchControl);
+
+        // コンテキストの状態が変わったことを確認するため、パスワード生成で検証
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
+        // パスワードが生成されることを確認
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        expect(resultInput.value).not.toBe('');
+    });
+});
+
+describe('複雑モードでのパスワード生成テスト', () => {
+    let user;
+
+    beforeEach(() => {
+        user = userEvent.setup();
+        renderApp();
+    });
+
+    test('複雑モードONの状態で正しくパスワードが生成される', async () => {
+        // 複雑モードをON（スイッチラベルをクリック）
+        const switchLabel = screen.getByText('複雑なパスワード生成モード').parentElement;
+        await user.click(switchLabel);
+
+        // フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '5678');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'abcd');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '!@');
+
+        // パスワード生成
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        await user.click(generateButton);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+
+        // パスワードが生成されていることを確認
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+        expect(resultInput.value).not.toBe('');
+        expect(resultInput.value.length).toBe(10); // 5678(4) + abcd(4) + !@(2)
+
+        // 入力した全ての文字が含まれることを確認
+        expect(resultInput.value).toContain('5');
+        expect(resultInput.value).toContain('6');
+        expect(resultInput.value).toContain('7');
+        expect(resultInput.value).toContain('8');
+        expect(resultInput.value).toContain('a');
+        expect(resultInput.value).toContain('b');
+        expect(resultInput.value).toContain('c');
+        expect(resultInput.value).toContain('d');
+        expect(resultInput.value).toContain('!');
+        expect(resultInput.value).toContain('@');
+    });
+
+    test('通常モードと複雑モードでパスワードが生成される', async () => {
+        // フォームに入力
+        const numberInput = getNumberInput();
+        await user.type(numberInput, '1234');
+
+        const wordInput = getWordInput();
+        await user.type(wordInput, 'test');
+
+        const symbolInput = getSymbolInput();
+        await user.type(symbolInput, '@#$');
+
+        const generateButton = screen.getByRole('button', { name: '生成' });
+        const resultInput = screen.getByRole('textbox', { name: /生成されたパスワード/i });
+
+        // 通常モードで生成
+        await user.click(generateButton);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        const normalPassword = resultInput.value;
+        expect(normalPassword.length).toBe(11);
+
+        // 複雑モードに切り替え
+        const switchLabel = screen.getByText('複雑なパスワード生成モード').parentElement;
+        await user.click(switchLabel);
+
+        // 複雑モードで生成
+        await user.click(generateButton);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        const complexPassword = resultInput.value;
+
+        // パスワードの長さが同じであることを確認
+        expect(complexPassword.length).toBe(11);
+
+        // 全ての文字が含まれていることを確認
+        expect(complexPassword).toContain('1');
+        expect(complexPassword).toContain('2');
+        expect(complexPassword).toContain('3');
+        expect(complexPassword).toContain('4');
+        expect(complexPassword).toContain('t');
+        expect(complexPassword).toContain('e');
+        expect(complexPassword).toContain('s');
+        expect(complexPassword).toContain('@');
+        expect(complexPassword).toContain('#');
+        expect(complexPassword).toContain('$');
+    });
+});
+
 describe('ローディング機能のテスト', () => {
     let user;
 
